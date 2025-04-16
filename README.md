@@ -1,16 +1,31 @@
-# flight_tracker
+# ✈️ FlightTracker
 
-A new Flutter project.
+**FlightTracker** is a simple Flutter mobile application that allows users to search for real-time flight information using the public [AviationStack API](https://aviationstack.com).  
+The app retrieves flight details such as airline, departure and arrival airports, status, and scheduled times.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📸 Preview
 
-A few resources to get you started if this is your first Flutter project:
+![FlightTracker Screenshot](screenshot.png)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## ⚙️ Tech stack
+
+- ✅ Flutter 3.29.x
+- ✅ Dart
+- ✅ HTTP (for API calls)
+- ✅ AviationStack API (REST API)
+- ✅ Visual Studio Code
+- ✅ Android Emulator (or physical device)
+
+---
+
+## 🚀 How to run
+
+```bash
+git clone https://github.com/mmorawiak/flight_tracker.git
+cd flight_tracker
+flutter pub get
+flutter run
