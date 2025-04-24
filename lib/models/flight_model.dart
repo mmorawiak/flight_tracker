@@ -73,6 +73,8 @@ class Flight {
   final double? departureLongitude;
   final double? arrivalLatitude;
   final double? arrivalLongitude;
+  final double? liveLatitude;
+  final double? liveLongitude;
 
   Flight({
     required this.flightNumber,
@@ -89,6 +91,8 @@ class Flight {
     this.departureLongitude,
     this.arrivalLatitude,
     this.arrivalLongitude,
+    this.liveLatitude,
+    this.liveLongitude,
   });
 
   factory Flight.fromJson(Map<String, dynamic> json) {
@@ -110,6 +114,14 @@ class Flight {
       departureLongitude: (json['departure']?['longitude'] as num?)?.toDouble(),
       arrivalLatitude: (json['arrival']?['latitude'] as num?)?.toDouble(),
       arrivalLongitude: (json['arrival']?['longitude'] as num?)?.toDouble(),
+      liveLatitude: (json['live']?['latitude'] as num?)?.toDouble(),
+      liveLongitude: (json['live']?['longitude'] as num?)?.toDouble(),
     );
   }
+
+  String get formattedDepartureTime =>
+      departureTime != null ? '${departureTime!.hour.toString().padLeft(2, '0')}:${departureTime!.minute.toString().padLeft(2, '0')}' : '-';
+
+  String get formattedArrivalTime =>
+      arrivalTime != null ? '${arrivalTime!.hour.toString().padLeft(2, '0')}:${arrivalTime!.minute.toString().padLeft(2, '0')}' : '-';
 }

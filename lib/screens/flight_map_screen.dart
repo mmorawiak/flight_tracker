@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
 
-class FlightMapScreen extends StatelessWidget {
+class FlightMapScreen extends StatefulWidget {
   final double departureLatitude;
   final double departureLongitude;
   final double arrivalLatitude;
   final double arrivalLongitude;
+  final double? liveLatitude;
+  final double? liveLongitude;
 
   const FlightMapScreen({
     super.key,
@@ -14,13 +16,51 @@ class FlightMapScreen extends StatelessWidget {
     required this.departureLongitude,
     required this.arrivalLatitude,
     required this.arrivalLongitude,
+    this.liveLatitude,
+    this.liveLongitude,
   });
 
   @override
+  State<FlightMapScreen> createState() => _FlightMapScreenState();
+}
+
+class _FlightMapScreenState extends State<FlightMapScreen> {
+  BitmapDescriptor? _planeIcon;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomMarker();
+  }
+
+  Future<void> _loadCustomMarker() async {
+    print('🔄 Loading plane icon...');
+    try {
+      final icon = await BitmapDescriptor.fromAssetImage(
+        const ImageConfiguration(size: Size(10, 10)),
+        'assets/plane.png',
+      );
+      print('✅ Plane icon loaded successfully');
+      setState(() {
+        _planeIcon = icon;
+      });
+    } catch (e) {
+      print('❌ Failed to load plane icon: \$e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final LatLng departure = LatLng(departureLatitude, departureLongitude);
-    final LatLng arrival = LatLng(arrivalLatitude, arrivalLongitude);
+    final LatLng departure = LatLng(widget.departureLatitude, widget.departureLongitude);
+    final LatLng arrival = LatLng(widget.arrivalLatitude, widget.arrivalLongitude);
     final curvedPath = _generateCurvedPath(departure, arrival);
+    final liveIndex = (curvedPath.length * 0.4).floor();
+    final LatLng livePosition = curvedPath[liveIndex];
+
+    print('🛫 Departure: ${widget.departureLatitude}, ${widget.departureLongitude}');
+    print('🛬 Arrival: ${widget.arrivalLatitude}, ${widget.arrivalLongitude}');
+    print('✈️ Live: ${widget.liveLatitude}, ${widget.liveLongitude}');
+    print('🖼️ Plane icon loaded: ${_planeIcon != null}');
 
     return Scaffold(
       appBar: AppBar(title: Text('Flight Route')),
@@ -42,6 +82,13 @@ class FlightMapScreen extends StatelessWidget {
             infoWindow: InfoWindow(title: 'Arrival'),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
           ),
+          if (widget.liveLatitude != null && widget.liveLongitude != null && _planeIcon != null)
+            Marker(
+              markerId: MarkerId('live'),
+              position: livePosition,
+              infoWindow: InfoWindow(title: 'In-flight (LIVE)'),
+              icon: _planeIcon!,
+            ),
         },
         polylines: {
           Polyline(

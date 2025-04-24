@@ -32,16 +32,18 @@ class FlightService {
         airlineName: 'LOT Polish Airlines (TEST)',
         departureAirport: 'Warsaw Chopin Airport',
         arrivalAirport: "Chicago O'Hare International Airport",
-        status: 'scheduled (TEST)',
+        status: 'en-route (TEST)',
         departureCity: 'Warsaw',
         arrivalCity: 'Chicago',
         flightDate: DateTime.now().toIso8601String().substring(0, 10),
-        departureTime: DateTime.now().add(Duration(hours: 2)),
-        arrivalTime: DateTime.now().add(Duration(hours: 10)),
+        departureTime: DateTime.now().subtract(Duration(hours: 3)),
+        arrivalTime: DateTime.now().add(Duration(hours: 5)),
         departureLatitude: 52.1657,
         departureLongitude: 20.9671,
         arrivalLatitude: 41.9742,
         arrivalLongitude: -87.9073,
+        liveLatitude: 55.0,
+        liveLongitude: -30.0,
       ),
       Flight(
         flightNumber: 'BA283',
@@ -125,6 +127,9 @@ class FlightService {
         final arrLat = flightJson['arrival']?['latitude'];
         final arrLng = flightJson['arrival']?['longitude'];
         print('Flight geo: depLat=$depLat, depLng=$depLng, arrLat=$arrLat, arrLng=$arrLng');
+        final liveLat = flightJson['live']?['latitude'];
+        final liveLng = flightJson['live']?['longitude'];
+        print('LIVE geo: liveLat=$liveLat, liveLng=$liveLng');
       }
 
       return [

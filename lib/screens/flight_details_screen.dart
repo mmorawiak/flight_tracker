@@ -57,6 +57,8 @@ class FlightDetailsScreen extends StatelessWidget {
                             departureLongitude: flight.departureLongitude!,
                             arrivalLatitude: flight.arrivalLatitude!,
                             arrivalLongitude: flight.arrivalLongitude!,
+                            liveLatitude: flight.liveLatitude,
+                            liveLongitude: flight.liveLongitude,
                           ),
                         ),
                       );
