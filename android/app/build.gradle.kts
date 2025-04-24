@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -20,12 +19,17 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.flight_tracker"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
+    applicationId = "com.example.flight_tracker"
+    minSdk = flutter.minSdkVersion
+    targetSdk = flutter.targetSdkVersion
+    versionCode = flutter.versionCode
+    versionName = flutter.versionName
+
+    manifestPlaceholders.put(
+        "GOOGLE_MAPS_API_KEY",
+        System.getenv("GOOGLE_MAPS_API_KEY") ?: "YOUR_DEFAULT_KEY"
+    )
+}
 
     buildTypes {
         release {

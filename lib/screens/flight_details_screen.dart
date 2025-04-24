@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/flight_model.dart';
+import '../screens/flight_map_screen.dart';
 
 class FlightDetailsScreen extends StatelessWidget {
   final Flight flight;
@@ -15,6 +16,9 @@ class FlightDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('DEPARTURE LAT: ${flight.departureLatitude}');
+    print('ARRIVAL LAT: ${flight.arrivalLatitude}');
+
     return Scaffold(
       appBar: AppBar(title: Text('${flight.airlineName} ${flight.flightNumber}')),
       body: Padding(
@@ -36,6 +40,34 @@ class FlightDetailsScreen extends StatelessWidget {
             SizedBox(height: 24),
             Center(
               child: Icon(Icons.flight_takeoff, size: 64, color: Colors.indigo.shade300),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.map),
+                  label: Text('Pokaż trasę lotu'),
+                  onPressed: () {
+                    if (flight.departureLatitude != null && flight.arrivalLatitude != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FlightMapScreen(
+                            departureLatitude: flight.departureLatitude!,
+                            departureLongitude: flight.departureLongitude!,
+                            arrivalLatitude: flight.arrivalLatitude!,
+                            arrivalLongitude: flight.arrivalLongitude!,
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Brak współrzędnych dla tego lotu')),
+                      );
+                    }
+                  },
+                ),
+              ),
             ),
           ],
         ),

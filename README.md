@@ -13,10 +13,23 @@ Aplikacja mobilna Flutter do śledzenia lotów – wykorzystująca API AviationS
   - miastem wylotu i przylotu
   - datą lotu
 - Ekran szczegółów z dodatkowymi informacjami
+- Widok trasy lotu na mapie (Google Maps)
+- Obsługa błędów API i danych
 - Interfejs w języku polskim
-- Obsługa błędów API
-- Wersjonowanie repozytorium Git (feature branche)
-- Mapy Google – (w trakcie wdrażania)
+
+---
+
+## 🧪 Dane testowe
+
+Jeśli API nie zwróci wyników lub limit zostanie przekroczony, aplikacja pokazuje loty testowe, np.:
+
+- **LO33 (LOT Polish Airlines)** – Warszawa → Chicago  
+- **BA283 (British Airways)** – Londyn → Los Angeles  
+- **SQ26 (Singapore Airlines)** – Singapur → Frankfurt  
+- **DL173 (Delta)** – Tokio → Seattle  
+- **QF12 (Qantas)** – Los Angeles → Sydney  
+
+Każdy z nich oznaczony jest jako `status: scheduled (TEST)`.
 
 ---
 
@@ -26,25 +39,23 @@ Aplikacja mobilna Flutter do śledzenia lotów – wykorzystująca API AviationS
 - Dart (3.7.2)
 - AviationStack API (plan: free tier)
 - Google Maps Flutter plugin (`google_maps_flutter`)
+- Obsługa .env (`flutter_dotenv`)
 
 ---
 
 ## 🚧 Napotkane problemy i rozwiązania
 
-### 🔸 Problem: `flutter` not recognized
+### 🔸 Problem: `flutter` not recognized  
 **Rozwiązanie:** dodanie Fluttera do zmiennej środowiskowej `PATH`.
 
-### 🔸 Problem: brak `SearchScreen`, błędy builda
-**Rozwiązanie:** stworzenie brakujących plików i klas, uruchomienie aplikacji od nowa.
-
-### 🔸 Problem: `"FlightTracker" is not a valid Dart package name`
+### 🔸 Problem: `"FlightTracker" is not a valid Dart package name`  
 **Rozwiązanie:** poprawa nazwy folderu projektu na `flight_tracker`.
 
-### 🔸 Problem: NDK version mismatch (Google Maps)
-**Rozwiązanie:**
-- Dodano `ndkVersion = "27.0.12077973"` do `android/app/build.gradle.kts`
-- Poprawiono `local.properties`
-- Restart Fluttera i czyszczenie: `flutter clean`
+### 🔸 Problem: brak danych geograficznych z API  
+**Rozwiązanie:** fallback do lotów testowych z predefiniowanymi koordynatami.
+
+### 🔸 Problem: NDK version mismatch (Google Maps)  
+**Rozwiązanie:** dodano `ndkVersion = "27.0.12077973"` do `build.gradle.kts`
 
 ---
 
@@ -60,15 +71,24 @@ git clone https://github.com/mmorawiak/flight_tracker.git
 cd flight_tracker
 ```
 
-3. **Zainstaluj zależności**
+3. **Ustaw klucze API**
+
+Utwórz plik `.env` w katalogu głównym i dodaj:
+
+```
+AVIATIONSTACK_API_KEY=your_api_key_here
+GOOGLE_MAPS_API_KEY=your_maps_key_here
+```
+
+4. **Zainstaluj zależności**
 
 ```bash
 flutter pub get
 ```
 
-4. **Uruchom emulator Androida (np. przez Android Studio)**
+5. **Uruchom emulator Androida**
 
-5. **Uruchom aplikację**
+6. **Odpal aplikację**
 
 ```bash
 flutter run
@@ -78,18 +98,17 @@ flutter run
 
 ## 🗺️ Planowane funkcje
 
-- Mapa z lokalizacją lotu (Google Maps)
-- Filtrowanie wyników
 - Przechowywanie ulubionych lotów
-- Testy jednostkowe
-- Responsywność na inne rozdzielczości
+- Filtrowanie wyników wyszukiwania
+- Testy jednostkowe i integracyjne
+- Responsywność na inne rozdzielczości i tablety
 
 ---
 
 ## 🔑 API Keys
 
-- **AviationStack**: w `lib/services/flight_service.dart`
-- **Google Maps**: w `android/app/src/main/AndroidManifest.xml`
+- **AviationStack**: w pliku `.env` i używany w `lib/services/flight_service.dart`
+- **Google Maps**: również w `.env`, wykorzystywany przez `AndroidManifest.xml`
 
 ---
 
@@ -104,8 +123,9 @@ lib/
 │   └── flight_service.dart
 ├── screens/
 │   ├── search_screen.dart
-│   ├── flight_list_screen.dart
-│   └── flight_details_screen.dart
+│   ├── flights_list_screen.dart
+│   ├── flight_details_screen.dart
+│   └── flight_map_screen.dart
 └── widgets/
     └── detail_row.dart
 ```

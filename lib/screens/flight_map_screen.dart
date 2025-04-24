@@ -1,121 +1,89 @@
-const iataCityMap = {
-  'WAW': 'Warsaw',
-  'WRO': 'Wroclaw',
-  'KRK': 'Krakow',
-  'POZ': 'Poznan',
-  'GDN': 'Gdansk',
-  'FRA': 'Frankfurt',
-  'CDG': 'Paris',
-  'JFK': 'New York',
-  'LHR': 'London',
-  'ADB': 'Izmir',
-  'AMS': 'Amsterdam',
-  'ARN': 'Stockholm',
-  'OSL': 'Oslo',
-  'CPH': 'Copenhagen',
-  'RIX': 'Riga',
-  'VIE': 'Vienna',
-  'ZRH': 'Zurich',
-  'BRU': 'Brussels',
-  'DUB': 'Dublin',
-  'MUC': 'Munich',
-  'BER': 'Berlin',
-  'BCN': 'Barcelona',
-  'MAD': 'Madrid',
-  'LIS': 'Lisbon',
-  'ATH': 'Athens',
-  'HEL': 'Helsinki',
-  'PRG': 'Prague',
-  'BUD': 'Budapest',
-  'SOF': 'Sofia',
-  'OTP': 'Bucharest',
-  'LED': 'Saint Petersburg',
-  'SVO': 'Moscow',
-  'DXB': 'Dubai',
-  'DOH': 'Doha',
-  'IST': 'Istanbul',
-  'TLV': 'Tel Aviv',
-  'CAI': 'Cairo',
-  'NRT': 'Tokyo',
-  'HND': 'Tokyo Haneda',
-  'PEK': 'Beijing',
-  'PVG': 'Shanghai',
-  'ICN': 'Seoul',
-  'SIN': 'Singapore',
-  'SYD': 'Sydney',
-  'MEL': 'Melbourne',
-  'YVR': 'Vancouver',
-  'YYZ': 'Toronto',
-  'ORD': 'Chicago',
-  'ATL': 'Atlanta',
-  'LAX': 'Los Angeles',
-  'SFO': 'San Francisco',
-  'MIA': 'Miami',
-  'BOS': 'Boston',
-  'SEA': 'Seattle',
-  'DEN': 'Denver',
-  'PHX': 'Phoenix',
-  'LAS': 'Las Vegas',
-};
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math';
 
-class Flight {
-  final String flightNumber;
-  final String airlineName;
-  final String departureAirport;
-  final String arrivalAirport;
-  final String status;
-  final DateTime? departureTime;
-  final DateTime? arrivalTime;
-  final String departureCity;
-  final String arrivalCity;
-  final String flightDate;
-  final double? departureLatitude;
-  final double? departureLongitude;
-  final double? arrivalLatitude;
-  final double? arrivalLongitude;
+class FlightMapScreen extends StatelessWidget {
+  final double departureLatitude;
+  final double departureLongitude;
+  final double arrivalLatitude;
+  final double arrivalLongitude;
 
-  Flight({
-    required this.flightNumber,
-    required this.airlineName,
-    required this.departureAirport,
-    required this.arrivalAirport,
-    required this.status,
-    this.departureTime,
-    this.arrivalTime,
-    required this.departureCity,
-    required this.arrivalCity,
-    required this.flightDate,
-    this.departureLatitude,
-    this.departureLongitude,
-    this.arrivalLatitude,
-    this.arrivalLongitude,
+  const FlightMapScreen({
+    super.key,
+    required this.departureLatitude,
+    required this.departureLongitude,
+    required this.arrivalLatitude,
+    required this.arrivalLongitude,
   });
 
-  factory Flight.fromJson(Map<String, dynamic> json) {
-    final departureIata = json['departure']?['iata'];
-    final arrivalIata = json['arrival']?['iata'];
+  @override
+  Widget build(BuildContext context) {
+    final LatLng departure = LatLng(departureLatitude, departureLongitude);
+    final LatLng arrival = LatLng(arrivalLatitude, arrivalLongitude);
+    final curvedPath = _generateCurvedPath(departure, arrival);
 
-    return Flight(
-      flightNumber: json['flight']?['iata'] ?? 'N/A',
-      airlineName: json['airline']?['name'] ?? 'Unknown',
-      departureAirport: json['departure']?['airport'] ?? 'Unknown',
-      arrivalAirport: json['arrival']?['airport'] ?? 'Unknown',
-      status: json['flight_status'] ?? 'N/A',
-      departureTime: DateTime.tryParse(json['departure']?['scheduled'] ?? ''),
-      arrivalTime: DateTime.tryParse(json['arrival']?['scheduled'] ?? ''),
-      departureCity: iataCityMap[departureIata] ?? departureIata ?? '',
-      arrivalCity: iataCityMap[arrivalIata] ?? arrivalIata ?? '',
-      flightDate: json['flight_date'] ?? '',
-      departureLatitude: (json['departure']?['latitude'] as num?)?.toDouble(),
-      departureLongitude: (json['departure']?['longitude'] as num?)?.toDouble(),
-      arrivalLatitude: (json['arrival']?['latitude'] as num?)?.toDouble(),
-      arrivalLongitude: (json['arrival']?['longitude'] as num?)?.toDouble(),
+    return Scaffold(
+      appBar: AppBar(title: Text('Flight Route')),
+      body: GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: departure,
+          zoom: 5,
+        ),
+        markers: {
+          Marker(
+            markerId: MarkerId('departure'),
+            position: departure,
+            infoWindow: InfoWindow(title: 'Departure'),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          ),
+          Marker(
+            markerId: MarkerId('arrival'),
+            position: arrival,
+            infoWindow: InfoWindow(title: 'Arrival'),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          ),
+        },
+        polylines: {
+          Polyline(
+            polylineId: PolylineId('flight_path'),
+            points: curvedPath,
+            color: Colors.redAccent,
+            width: 4,
+          ),
+        },
+      ),
     );
   }
 
-  String get formattedDepartureTime =>
-      departureTime != null ? '${departureTime!.hour.toString().padLeft(2, '0')}:${departureTime!.minute.toString().padLeft(2, '0')}' : '-';
+  List<LatLng> _generateCurvedPath(LatLng from, LatLng to, {int segments = 80}) {
+    final List<LatLng> path = [];
+    final lat1 = from.latitude * pi / 180;
+    final lon1 = from.longitude * pi / 180;
+    final lat2 = to.latitude * pi / 180;
+    final lon2 = to.longitude * pi / 180;
 
-  String get formattedArrivalTime =>
-      arrivalTime != null ? '${arrivalTime!.hour.toString().padLeft(2, '0')}:${arrivalTime!.minute.toString().padLeft(2, '0')}' : '-';
+    for (int i = 0; i <= segments; i++) {
+      final f = i / segments;
+      final A = sin((1 - f) * _centralAngle(lat1, lon1, lat2, lon2)) / sin(_centralAngle(lat1, lon1, lat2, lon2));
+      final B = sin(f * _centralAngle(lat1, lon1, lat2, lon2)) / sin(_centralAngle(lat1, lon1, lat2, lon2));
+
+      final x = A * cos(lat1) * cos(lon1) + B * cos(lat2) * cos(lon2);
+      final y = A * cos(lat1) * sin(lon1) + B * cos(lat2) * sin(lon2);
+      final z = A * sin(lat1) + B * sin(lat2);
+
+      final lat = atan2(z, sqrt(x * x + y * y));
+      final lon = atan2(y, x);
+
+      path.add(LatLng(lat * 180 / pi, lon * 180 / pi));
+    }
+
+    return path;
+  }
+
+  double _centralAngle(double lat1, double lon1, double lat2, double lon2) {
+    final dLat = lat2 - lat1;
+    final dLon = lon2 - lon1;
+    final a = pow(sin(dLat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dLon / 2), 2);
+    return 2 * asin(sqrt(a));
+  }
 }

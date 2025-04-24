@@ -69,6 +69,10 @@ class Flight {
   final String departureCity;
   final String arrivalCity;
   final String flightDate;
+  final double? departureLatitude;
+  final double? departureLongitude;
+  final double? arrivalLatitude;
+  final double? arrivalLongitude;
 
   Flight({
     required this.flightNumber,
@@ -81,6 +85,10 @@ class Flight {
     required this.departureCity,
     required this.arrivalCity,
     required this.flightDate,
+    this.departureLatitude,
+    this.departureLongitude,
+    this.arrivalLatitude,
+    this.arrivalLongitude,
   });
 
   factory Flight.fromJson(Map<String, dynamic> json) {
@@ -98,6 +106,10 @@ class Flight {
       departureCity: iataCityMap[departureIata] ?? departureIata ?? '',
       arrivalCity: iataCityMap[arrivalIata] ?? arrivalIata ?? '',
       flightDate: json['flight_date'] ?? '',
+      departureLatitude: (json['departure']?['latitude'] as num?)?.toDouble(),
+      departureLongitude: (json['departure']?['longitude'] as num?)?.toDouble(),
+      arrivalLatitude: (json['arrival']?['latitude'] as num?)?.toDouble(),
+      arrivalLongitude: (json['arrival']?['longitude'] as num?)?.toDouble(),
     );
   }
 }
