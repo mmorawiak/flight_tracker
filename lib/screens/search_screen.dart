@@ -1,41 +1,49 @@
 import 'package:flutter/material.dart';
 import '../services/flight_service.dart';
-import 'flight_details_screen.dart';
+import '../models/flight_model.dart';
+import 'flights_list_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final _controller = TextEditingController();
+  final _departureController = TextEditingController();
+  final _arrivalController = TextEditingController();
+  final _airlineController = TextEditingController();
+  String _selectedStatus = '';
   bool _loading = false;
-  String? _error;
 
-  void _searchFlight() async {
-    final flightNumber = _controller.text.trim();
-    if (flightNumber.isEmpty) return;
+  void _searchFlights() async {
+    final departure = _departureController.text.trim();
+    final arrival = _arrivalController.text.trim();
+    final airline = _airlineController.text.trim();
+    final status = _selectedStatus;
 
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (departure.isEmpty && arrival.isEmpty && airline.isEmpty && status.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please provide at least one filter')));
+      return;
+    }
+
+    setState(() => _loading = true);
 
     try {
-      final flight = await FlightService.fetchFlight(flightNumber);
-      if (flight == null) {
-        setState(() => _error = 'Flight not found.');
-        return;
-      }
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FlightDetailsScreen(flight: flight),
-        ),
+      final flights = await FlightService.fetchFlightsByFilters(
+        departure: departure,
+        arrival: arrival,
+        airline: airline,
+        status: status,
       );
-    } catch (e) {
-      setState(() => _error = 'Error: $e');
+
+      if (flights.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No flights found')));
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => FlightsListScreen(flights: flights)),
+        );
+      }
     } finally {
       setState(() => _loading = false);
     }
@@ -45,26 +53,38 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Flight Tracker')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                labelText: 'Flight Number (e.g. LO123)',
-                border: OutlineInputBorder(),
-              ),
+              controller: _departureController,
+              decoration: InputDecoration(labelText: 'Departure IATA (e.g. WRO)', border: OutlineInputBorder()),
             ),
             SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _loading ? null : _searchFlight,
-              child: _loading ? CircularProgressIndicator() : Text('Search'),
+            TextField(
+              controller: _arrivalController,
+              decoration: InputDecoration(labelText: 'Arrival IATA (e.g. WAW)', border: OutlineInputBorder()),
             ),
-            if (_error != null) ...[
-              SizedBox(height: 16),
-              Text(_error!, style: TextStyle(color: Colors.red)),
-            ]
+            SizedBox(height: 12),
+            TextField(
+              controller: _airlineController,
+              decoration: InputDecoration(labelText: 'Airline IATA (e.g. LO)', border: OutlineInputBorder()),
+            ),
+            SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedStatus.isEmpty ? null : _selectedStatus,
+              items: ['', 'scheduled', 'active', 'landed', 'cancelled']
+                  .map((status) => DropdownMenuItem(value: status, child: Text(status.isEmpty ? 'Any Status' : status)))
+                  .toList(),
+              onChanged: (val) => setState(() => _selectedStatus = val ?? ''),
+              decoration: InputDecoration(labelText: 'Flight Status', border: OutlineInputBorder()),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _loading ? null : _searchFlights,
+              child: _loading ? CircularProgressIndicator() : Text('Search Flights'),
+            ),
           ],
         ),
       ),
