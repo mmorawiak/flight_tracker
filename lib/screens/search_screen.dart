@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../services/flight_service.dart';
 import '../models/flight_model.dart';
 import 'flights_list_screen.dart';
+import 'login_screen.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
@@ -49,10 +53,30 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _logout() async {
+  final authBox = Hive.box('authBox');
+  await authBox.put('isLoggedIn', false);
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginScreen()),
+    (route) => false,
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Flight Tracker')),
+      appBar: AppBar(
+        title: Text('Flight Tracker'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: 'Wyloguj się',
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

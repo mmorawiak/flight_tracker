@@ -1,35 +1,38 @@
 # ✈️ Flight Tracker
 
-Aplikacja mobilna Flutter do śledzenia lotów – wykorzystująca API AviationStack i mapy Google do prezentowania szczegółowych informacji o połączeniach lotniczych.
+Aplikacja mobilna Flutter do śledzenia lotów – wykorzystująca API AviationStack i ReqRes oraz mapy Google do prezentowania szczegółowych informacji o połączeniach lotniczych.
 
 ---
 
 ## 📱 Funkcje aplikacji
 
+- Logowanie użytkownika przez API ReqRes (zapis sesji w Hive)
 - Wyszukiwanie lotów po nazwie miasta lub kodzie IATA
 - Prezentacja listy wyników z:
   - godziną wylotu i przylotu
   - nazwą przewoźnika
   - miastem wylotu i przylotu
   - datą lotu
-- Ekran szczegółów z dodatkowymi informacjami
-- Widok trasy lotu na mapie (Google Maps)
-- Obsługa błędów API i danych
-- Interfejs w języku polskim
+- Ekran szczegółów z dodatkowymi informacjami o locie
+- Widok trasy lotu na mapie (Google Maps) z zakrzywioną trajektorią
+- Pokazywanie pozycji na żywo samolotu (jeśli dostępna)
+- Wylogowywanie użytkownika i czyszczenie sesji
+- Obsługa błędów API i fallback na dane testowe
+- Przejrzysty interfejs (UI/UX) w języku polskim
 
 ---
 
 ## 🧪 Dane testowe
 
-Jeśli API nie zwróci wyników lub limit zostanie przekroczony, aplikacja pokazuje loty testowe, np.:
+Jeśli API nie zwróci wyników lub limit zostanie przekroczony, aplikacja pokazuje loty testowe:
 
 - **LO33 (LOT Polish Airlines)** – Warszawa → Chicago  
 - **BA283 (British Airways)** – Londyn → Los Angeles  
 - **SQ26 (Singapore Airlines)** – Singapur → Frankfurt  
 - **DL173 (Delta)** – Tokio → Seattle  
-- **QF12 (Qantas)** – Los Angeles → Sydney  
+- **QF12 (Qantas)** – Los Angeles → Sydney
 
-Każdy z nich oznaczony jest jako `status: scheduled (TEST)`.
+Status oznaczony jako `scheduled (TEST)`.
 
 ---
 
@@ -37,32 +40,29 @@ Każdy z nich oznaczony jest jako `status: scheduled (TEST)`.
 
 - Flutter (3.29.2)
 - Dart (3.7.2)
-- AviationStack API (plan: free tier)
-- Google Maps Flutter plugin (`google_maps_flutter`)
-- Obsługa .env (`flutter_dotenv`)
+- Hive (lokalna baza danych)
+- AviationStack API
+- ReqRes API (autoryzacja)
+- Google Maps Flutter Plugin (`google_maps_flutter`)
+- Obsługa `.env` plików (`flutter_dotenv`)
 
 ---
 
 ## 🚧 Napotkane problemy i rozwiązania
 
-### 🔸 Problem: `flutter` not recognized  
-**Rozwiązanie:** dodanie Fluttera do zmiennej środowiskowej `PATH`.
-
-### 🔸 Problem: `"FlightTracker" is not a valid Dart package name`  
-**Rozwiązanie:** poprawa nazwy folderu projektu na `flight_tracker`.
-
-### 🔸 Problem: brak danych geograficznych z API  
-**Rozwiązanie:** fallback do lotów testowych z predefiniowanymi koordynatami.
-
-### 🔸 Problem: NDK version mismatch (Google Maps)  
-**Rozwiązanie:** dodano `ndkVersion = "27.0.12077973"` do `build.gradle.kts`
+- **`flutter` not recognized** – dodano Flutter do PATH
+- **Niepoprawna nazwa paczki** – zmieniono na `flight_tracker`
+- **Brak danych geo** – fallback na loty testowe
+- **Błąd NDK** – wymuszono wersję NDK w `build.gradle.kts`
+- **Wymóg API Key dla ReqRes** – rozwiązany przez lokalne .env
+- **Wylogowanie i przekierowanie** – czyszczona sesja Hive i reset ekranu
 
 ---
 
 ## ▶️ Uruchomienie aplikacji
 
 1. **Zainstaluj Flutter SDK**  
-   https://docs.flutter.dev/get-started/install/windows
+👉 https://docs.flutter.dev/get-started/install
 
 2. **Klonuj repozytorium**
 
@@ -71,24 +71,31 @@ git clone https://github.com/mmorawiak/flight_tracker.git
 cd flight_tracker
 ```
 
-3. **Ustaw klucze API**
+3. **Utwórz plik `.env`**
 
-Utwórz plik `.env` w katalogu głównym i dodaj:
-
-```
+```env
 AVIATIONSTACK_API_KEY=your_api_key_here
 GOOGLE_MAPS_API_KEY=your_maps_key_here
+REQRES_API_KEY=your_dummy_key_if_needed
 ```
 
-4. **Zainstaluj zależności**
+4. **Instalacja zależności**
 
 ```bash
 flutter pub get
 ```
 
-5. **Uruchom emulator Androida**
+5. **Dodaj klucz Google Maps do AndroidManifest.xml**
 
-6. **Odpal aplikację**
+```xml
+<meta-data
+  android:name="com.google.android.geo.API_KEY"
+  android:value="${GOOGLE_MAPS_API_KEY}" />
+```
+
+6. **Uruchom emulator Androida**
+
+7. **Start aplikacji**
 
 ```bash
 flutter run
@@ -96,19 +103,21 @@ flutter run
 
 ---
 
-## 🗺️ Planowane funkcje
+## 🗺️ Możliwe do zrealizowania funkcje
 
-- Przechowywanie ulubionych lotów
-- Filtrowanie wyników wyszukiwania
-- Testy jednostkowe i integracyjne
-- Responsywność na inne rozdzielczości i tablety
+- [ ] Zapis ulubionych lotów (Hive)
+- [ ] Testy jednostkowe i widgetowe
+- [ ] Tryb offline (cacheowanie danych)
+- [ ] Responsywność (tablet, landscape mode)
+- [ ] System tłumaczeń (i18n)
 
 ---
 
 ## 🔑 API Keys
 
-- **AviationStack**: w pliku `.env` i używany w `lib/services/flight_service.dart`
-- **Google Maps**: również w `.env`, wykorzystywany przez `AndroidManifest.xml`
+- AviationStack API Key (w `.env`)
+- Google Maps API Key (w `.env`)
+- ReqRes API (symulacja autoryzacji)
 
 ---
 
@@ -120,14 +129,15 @@ lib/
 ├── models/
 │   └── flight_model.dart
 ├── services/
-│   └── flight_service.dart
-├── screens/
-│   ├── search_screen.dart
-│   ├── flights_list_screen.dart
-│   ├── flight_details_screen.dart
-│   └── flight_map_screen.dart
-└── widgets/
-    └── detail_row.dart
+│   ├── flight_service.dart
+│   └── user_service.dart
+└── screens/
+    ├── login_screen.dart
+    ├── search_screen.dart
+    ├── flights_list_screen.dart
+    ├── flight_details_screen.dart
+    └── flight_map_screen.dart
+
 ```
 
 ---
@@ -135,3 +145,4 @@ lib/
 ## 📄 Licencja
 
 MIT License
+

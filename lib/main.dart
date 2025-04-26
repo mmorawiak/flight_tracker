@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/search_screen.dart';
+import 'screens/login_screen.dart';
 
-Future<void> main() async {
-  await dotenv.load(fileName: ".env");
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+  await Hive.initFlutter();
+  await Hive.openBox('authBox');
+
   runApp(const FlightTrackerApp());
 }
 
@@ -12,10 +18,30 @@ class FlightTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flight Tracker',
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: SearchScreen(),
+    return FutureBuilder(
+      future: Hive.openBox('authBox'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        } else {
+          final authBox = Hive.box('authBox');
+          final isLoggedIn = authBox.get('isLoggedIn', defaultValue: false);
+
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Flight Tracker',
+            theme: ThemeData(
+              primarySwatch: Colors.indigo,
+              useMaterial3: true,
+            ),
+            home: isLoggedIn ? const SearchScreen() : const LoginScreen(),
+          );
+        }
+      },
     );
   }
 }
