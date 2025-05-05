@@ -46,3 +46,4 @@ app.*.map.json
 
 # Env config file (sensitive data)
 .env
+.android/app/src/main/AndroidManifest.xml
