@@ -19,14 +19,24 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedStatus = '';
   bool _loading = false;
 
+  final Map<String, String> statusTranslationMap = {
+    '': '',
+    'Zaplanowany': 'scheduled',
+    'W trakcie': 'active',
+    'Wylądował': 'landed',
+    'Anulowany': 'cancelled',
+  };
+
   void _searchFlights() async {
     final departure = _departureController.text.trim();
     final arrival = _arrivalController.text.trim();
     final airline = _airlineController.text.trim();
-    final status = _selectedStatus;
+    final status = statusTranslationMap[_selectedStatus] ?? '';
 
     if (departure.isEmpty && arrival.isEmpty && airline.isEmpty && status.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please provide at least one filter')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Proszę podać przynajmniej jeden filtr')),
+      );
       return;
     }
 
@@ -41,7 +51,9 @@ class _SearchScreenState extends State<SearchScreen> {
       );
 
       if (flights.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No flights found')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nie znaleziono lotów')),
+        );
       } else {
         Navigator.push(
           context,
@@ -54,21 +66,21 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _logout() async {
-  final authBox = Hive.box('authBox');
-  await authBox.put('isLoggedIn', false);
+    final authBox = Hive.box('authBox');
+    await authBox.put('isLoggedIn', false);
 
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (_) => const LoginScreen()),
-    (route) => false,
-  );
-}
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flight Tracker'),
+        title: Text('Wyszukiwarka lotów'),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -83,31 +95,52 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             TextField(
               controller: _departureController,
-              decoration: InputDecoration(labelText: 'Departure IATA (e.g. WRO)', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Kod IATA lotniska wylotu (np. WRO)',
+                prefixIcon: Icon(Icons.flight_takeoff),
+              ),
             ),
             SizedBox(height: 12),
             TextField(
               controller: _arrivalController,
-              decoration: InputDecoration(labelText: 'Arrival IATA (e.g. WAW)', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Kod IATA lotniska przylotu (np. WAW)',
+                prefixIcon: Icon(Icons.flight_land),
+              ),
             ),
             SizedBox(height: 12),
             TextField(
               controller: _airlineController,
-              decoration: InputDecoration(labelText: 'Airline IATA (e.g. LO)', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Kod IATA linii lotniczej (np. LO)',
+                prefixIcon: Icon(Icons.airlines),
+              ),
             ),
             SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _selectedStatus.isEmpty ? null : _selectedStatus,
-              items: ['', 'scheduled', 'active', 'landed', 'cancelled']
-                  .map((status) => DropdownMenuItem(value: status, child: Text(status.isEmpty ? 'Any Status' : status)))
-                  .toList(),
+              items: statusTranslationMap.keys.map((plStatus) {
+                return DropdownMenuItem(
+                  value: plStatus,
+                  child: Text(plStatus.isEmpty ? 'Dowolny status' : plStatus),
+                );
+              }).toList(),
               onChanged: (val) => setState(() => _selectedStatus = val ?? ''),
-              decoration: InputDecoration(labelText: 'Flight Status', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Status lotu',
+                prefixIcon: Icon(Icons.info_outline),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loading ? null : _searchFlights,
-              child: _loading ? CircularProgressIndicator() : Text('Search Flights'),
+              child: _loading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text('Szukaj lotów'),
             ),
           ],
         ),

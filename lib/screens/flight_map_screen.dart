@@ -34,18 +34,16 @@ class _FlightMapScreenState extends State<FlightMapScreen> {
   }
 
   Future<void> _loadCustomMarker() async {
-    print('🔄 Loading plane icon...');
     try {
       final icon = await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(10, 10)),
         'assets/plane.png',
       );
-      print('✅ Plane icon loaded successfully');
       setState(() {
         _planeIcon = icon;
       });
     } catch (e) {
-      print('❌ Failed to load plane icon: \$e');
+      print('❌ Failed to load plane icon: $e');
     }
   }
 
@@ -57,47 +55,44 @@ class _FlightMapScreenState extends State<FlightMapScreen> {
     final liveIndex = (curvedPath.length * 0.4).floor();
     final LatLng livePosition = curvedPath[liveIndex];
 
-    print('🛫 Departure: ${widget.departureLatitude}, ${widget.departureLongitude}');
-    print('🛬 Arrival: ${widget.arrivalLatitude}, ${widget.arrivalLongitude}');
-    print('✈️ Live: ${widget.liveLatitude}, ${widget.liveLongitude}');
-    print('🖼️ Plane icon loaded: ${_planeIcon != null}');
-
     return Scaffold(
-      appBar: AppBar(title: Text('Flight Route')),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: departure,
-          zoom: 5,
-        ),
-        markers: {
-          Marker(
-            markerId: MarkerId('departure'),
-            position: departure,
-            infoWindow: InfoWindow(title: 'Departure'),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      appBar: AppBar(title: Text('Trasa lotu')),
+      body: SafeArea(
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: departure,
+            zoom: 5,
           ),
-          Marker(
-            markerId: MarkerId('arrival'),
-            position: arrival,
-            infoWindow: InfoWindow(title: 'Arrival'),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          ),
-          if (widget.liveLatitude != null && widget.liveLongitude != null && _planeIcon != null)
+          markers: {
             Marker(
-              markerId: MarkerId('live'),
-              position: livePosition,
-              infoWindow: InfoWindow(title: 'In-flight (LIVE)'),
-              icon: _planeIcon!,
+              markerId: MarkerId('departure'),
+              position: departure,
+              infoWindow: InfoWindow(title: 'Wylot'),
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
             ),
-        },
-        polylines: {
-          Polyline(
-            polylineId: PolylineId('flight_path'),
-            points: curvedPath,
-            color: Colors.redAccent,
-            width: 4,
-          ),
-        },
+            Marker(
+              markerId: MarkerId('arrival'),
+              position: arrival,
+              infoWindow: InfoWindow(title: 'Przylot'),
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+            ),
+            if (widget.liveLatitude != null && widget.liveLongitude != null && _planeIcon != null)
+              Marker(
+                markerId: MarkerId('live'),
+                position: livePosition,
+                infoWindow: InfoWindow(title: 'W locie (NA ŻYWO)'),
+                icon: _planeIcon!,
+              ),
+          },
+          polylines: {
+            Polyline(
+              polylineId: PolylineId('flight_path'),
+              points: curvedPath,
+              color: Colors.redAccent,
+              width: 4,
+            ),
+          },
+        ),
       ),
     );
   }
@@ -111,8 +106,9 @@ class _FlightMapScreenState extends State<FlightMapScreen> {
 
     for (int i = 0; i <= segments; i++) {
       final f = i / segments;
-      final A = sin((1 - f) * _centralAngle(lat1, lon1, lat2, lon2)) / sin(_centralAngle(lat1, lon1, lat2, lon2));
-      final B = sin(f * _centralAngle(lat1, lon1, lat2, lon2)) / sin(_centralAngle(lat1, lon1, lat2, lon2));
+      final angle = _centralAngle(lat1, lon1, lat2, lon2);
+      final A = sin((1 - f) * angle) / sin(angle);
+      final B = sin(f * angle) / sin(angle);
 
       final x = A * cos(lat1) * cos(lon1) + B * cos(lat2) * cos(lon2);
       final y = A * cos(lat1) * sin(lon1) + B * cos(lat2) * sin(lon2);
@@ -130,7 +126,8 @@ class _FlightMapScreenState extends State<FlightMapScreen> {
   double _centralAngle(double lat1, double lon1, double lat2, double lon2) {
     final dLat = lat2 - lat1;
     final dLon = lon2 - lon1;
-    final a = pow(sin(dLat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dLon / 2), 2);
+    final a = pow(sin(dLat / 2), 2) +
+        cos(lat1) * cos(lat2) * pow(sin(dLon / 2), 2);
     return 2 * asin(sqrt(a));
   }
 }

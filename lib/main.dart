@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/search_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +35,7 @@ class FlightTrackerApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Flight Tracker',
-            theme: ThemeData(
-              primarySwatch: Colors.indigo,
-              useMaterial3: true,
-            ),
+            theme: appTheme,
             home: isLoggedIn ? const SearchScreen() : const LoginScreen(),
           );
         }

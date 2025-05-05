@@ -15,12 +15,12 @@ class FlightsListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Search Results')),
+      appBar: AppBar(title: Text('Wyniki wyszukiwania')),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('${flights.length} flights found'),
+            child: Text('${flights.length} lotów znaleziono'),
           ),
           Expanded(
             child: ListView.builder(
@@ -29,13 +29,23 @@ class FlightsListScreen extends StatelessWidget {
                 final flight = flights[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListTile(
-                    title: Text('${flight.airlineName} ${flight.flightNumber}'),
+                    title: Text(
+                      '${flight.airlineName} ${flight.flightNumber}',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Date: ${flight.flightDate}'),
-                        Text('${flight.departureAirport} (${flight.departureCity}) → ${flight.arrivalAirport} (${flight.arrivalCity})'),
+                        SizedBox(height: 4),
+                        Text('Data: ${flight.flightDate}'),
+                        Text(
+                          '${flight.departureAirport} (${flight.departureCity}) → ${flight.arrivalAirport} (${flight.arrivalCity})',
+                        ),
                         SizedBox(height: 4),
                         Text(
                           '${_formatTime(flight.departureTime)} → ${_formatTime(flight.arrivalTime)}',
@@ -43,7 +53,20 @@ class FlightsListScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    trailing: Text(flight.status),
+                    trailing: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        flight.status,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.indigo.shade900,
+                        ),
+                      ),
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,
