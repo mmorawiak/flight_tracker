@@ -29,8 +29,6 @@ Jeśli API nie zwróci wyników lub limit zostanie przekroczony, aplikacja pokaz
 - **LO33 (LOT Polish Airlines)** – Warszawa → Chicago  
 - **BA283 (British Airways)** – Londyn → Los Angeles  
 - **SQ26 (Singapore Airlines)** – Singapur → Frankfurt  
-- **DL173 (Delta)** – Tokio → Seattle  
-- **QF12 (Qantas)** – Los Angeles → Sydney
 
 Status oznaczony jako `scheduled (TEST)`.
 
@@ -56,6 +54,7 @@ Status oznaczony jako `scheduled (TEST)`.
 - **Błąd NDK** – wymuszono wersję NDK w `build.gradle.kts`
 - **Wymóg API Key dla ReqRes** – rozwiązany przez lokalne .env
 - **Wylogowanie i przekierowanie** – czyszczona sesja Hive i reset ekranu
+- **Brak widocznej mapy, sam interfejs** - emulator nie obsługiwał google maps
 
 ---
 
@@ -131,6 +130,8 @@ lib/
 ├── services/
 │   ├── flight_service.dart
 │   └── user_service.dart
+├── theme/
+│   └── theme.dart
 └── screens/
     ├── login_screen.dart
     ├── search_screen.dart
